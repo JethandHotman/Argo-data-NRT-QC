@@ -394,9 +394,56 @@ def visual_profile_test():
     """
     return
 
-def Frozen_profile_test():
-    """Test 18"""
-    return
+def Frozen_profile_test(pressure_p1,temperature_p1,salinity_p1,pressure_p2,temperature_p2,salinity_p2):
+    """
+    Test 18:
+        Input:
+            Pressure from profile 1 (array like)
+            Temperature from profile 1 (array like)
+            Salinity from profile 1 (array like)
+            Pressure from profile 2 (array like)
+            Temperature from profile 2 (array like)
+            Salinity from profile 2 (array like)
+        Output:
+            Quality control flag (Intager)
+    
+    """
+    
+    import pandas as pd
+    
+    # convert to dataframs to take advantage of pandas functions
+    profile_1 = pd.Dataframe({'Pressure_db':pressure_p1,'Temp_DegC':temperature_p1, 'Salinity':salinity_p1})
+    profile_2 = pd.Dataframe({'Pressure_db':pressure_p2,'Temp_DegC':temperature_p2, 'Salinity':salinity_p2})
+    
+    # Itentify depth bins
+    profile_1_bins = range(0, int(profile_1['Pressure_db'].max()) + 50, 50)
+    profile_2_bins = range(0, int(profile_2['Pressure_db'].max()) + 50, 50)
+
+    # Sort the data into the bins
+    profile_1['Depth_bin'] = pd.cut(profile_1['Pressure_db'],profile_1_bins,right=False)
+    profile_2['Depth_bin'] = pd.cut(profile_2['Pressure_db'],profile_2_bins,right=False)
+    
+    # Average data within the bins
+    p1_depth_aves = profile_1.groupby('Depth_bin')[['Temp_DegC', 'Salinity']].mean().reset_index()
+    p2_depth_aves = profile_2.groupby('Depth_bin')[['Temp_DegC', 'Salinity']].mean().reset_index()
+
+    # Extract binned temperture and salinity profiles
+    p1_temp = p1_depth_aves.Temp_DegC
+    p2_temp = p2_depth_aves.Temp_DegC
+    p1_salt = p1_depth_aves.Salinity
+    p2_salt = p2_depth_aves.Salinity
+    
+    # Compare profiles
+    deltaT = abs(p1_temp - p2_temp)
+    deltaS = abs(p1_salt - p2_salt)
+
+    # Calculate QC flag
+    if max(deltaT) < 0.3 and min(deltaT) < 0.001 and deltaT.mean() < 0.02 or max(deltaS) < 0.3 and min(deltaS) < 0.001 and deltaS.mean() < 0.004:
+        qc_flag = 4
+    else:
+        qc_flag = 1
+    
+    return qc_flag
 
 def Deepest_pressure_test():
     """Test 19"""
@@ -406,45 +453,3 @@ def MEDD_test():
     """Test 25"""
     return
 
-# Example profiles
-pressure = [0, 10, 20, 30, 40]  # Depth in dbar
-temperature = [20, 22, 35, -5, 5]  # Example temp with rollover
-salinity = [35, 36, 45, 1, 37]  # Example salinity with rollover
-
-# Run the test
-results = digit_rollover_test(temperature, salinity, pressure)
-print(results)
-
-
-
-Argo_dates = datetime.datetime.strptime('2024-05-10  06:16:00', '%Y-%m-%d %H:%M:%S')
-Impossible_date_test(Argo_dates)
-
-Impossible_Location_test(23.4, -34.5)
-
-
-lon1 = 26.2233
-lat1 = -34.5062
-lon2 = 26.0708 
-lat2 = -34.6218
-lon3 = 23.1308
-lat3 = -38.0697	
-
-t1 = '2024-05-08  23:27:30'
-t2 = '2024-05-09  09:35:20'
-t3 = '2024-05-23  11:54:00'
-
-Impossible_Speed_test(lon1, lat1, lon2, lat2, t1, t2)
-
-
-pres = -100
-temp = 35
-salt = 44
-
-p_flag, t_flag, s_flag = Global_Range_test(pres,temp,salt)
-
-import numpy as np
-
-pres_t = np.linspace(0,100,100)
-
-pref_flag = Pressure_Increasing_test(pres_t)

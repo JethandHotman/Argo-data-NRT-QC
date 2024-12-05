@@ -10,13 +10,11 @@ Near real-time QC checks for Argo data
 import datetime
 import math
 import numpy as np
-import gsw
-#import pandas as pd
 
 ####################################################
 ############## To do: 03 Dec 2024 ##################
-# Regional range test (test 7) Get range from Tammy
-# Tests 15, 16, 18, 19, 25
+# Regional range test (test 7)
+# Tests 15, 16, 19, 25
 # Test functions on seatrec float data
 
 def Platform_Identification_test(float_id):
@@ -177,7 +175,10 @@ def Global_Range_test(pressure,temperature,salinity):
     return pressure_flag, temperature_flag, salinity_flag
 
 def regional_range_test():
-    """ Test 7 """
+    """ 
+    Test 7: 
+    What are the ranges for the Indian and South Atlantic?
+    """
     return
 
 def Pressure_Increasing_test(pressure):
@@ -224,7 +225,6 @@ def spike_test(temperature, salinity, pressure):
     
     """
     
-    
     for ii in range(len(temperature)-3):
         
         pres = pressure[ii]
@@ -263,8 +263,6 @@ def top_bottom_spike_test():
 def gradient_test():
     """ Test 11 Obsolete """
     return
-
-
 
 def digit_rollover_test(temperature, salinity, pressure, temp_threshold=10, sal_threshold=5):
     """
@@ -355,6 +353,7 @@ def Density_inversion_test(temperature, salinity, pressure,longitude,latitude):
             Salinity flag (array like)
     
     """
+    import gsw
     
     temp_flag = np.empty(np.shape(temperature))
     sal_flag = np.empty(np.shape(salinity))
